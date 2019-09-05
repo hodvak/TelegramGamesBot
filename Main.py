@@ -54,8 +54,12 @@ def join_game(bot, update):
     user_name = update.callback_query.from_user.username
 
     new_player = {'name': user_name, 'id': user_id}
+
+    # add player only if there no more than max players and player not in the array
     # todo: when done testing remove 'or true'
-    if not any(player['name'] == user_name for player in unstarted_games[chat_id].players) or True:
+    if len(unstarted_games[chat_id].players) < unstarted_games[chat_id].game.max_players \
+            and not any(player['id'] == user_id for player in unstarted_games[chat_id].players) \
+            or True:
         unstarted_games[chat_id].players.append(new_player)
 
     new_markup = InlineKeyboardMarkup(_get_new_buttons(chat_id))
@@ -80,9 +84,10 @@ def _get_new_buttons(chat_id):
 
 def start_game(bot, update):
     chat_id = update.callback_query.message.chat.id
-    games[chat_id] = unstarted_games[chat_id].game(bot=bot,
-                                                   chat_id=chat_id,
-                                                   players=unstarted_games[chat_id].players)
+    if len(unstarted_games[chat_id].players) >= unstarted_games[chat_id].game.min_players:
+        games[chat_id] = unstarted_games[chat_id].game(bot=bot,
+                                                       chat_id=chat_id,
+                                                       players=unstarted_games[chat_id].players)
 
 
 if __name__ == '__main__':
