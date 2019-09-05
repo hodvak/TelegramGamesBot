@@ -7,9 +7,10 @@ class SecretHitlerGame(Game):
     cards_data = [{'name': 'hitler', "img": "hitler.png"},
                   {'name': 'liberal', "img": "liberal.png"},
                   {'name': 'fascist', "img": "fascist.png"}]
-    cards = [1, 1, 0, 1, 2, 1, 2, 1, 2, 1]
-    min_players = 5
-    max_players = 10
+    CARDS = [1, 1, 0, 1, 2, 1, 2, 1, 2, 1]
+    MIN_PLAYERS = 5
+    MAX_PLAYERS = 10
+    NAME = "Secret Hitler"
 
     def __init__(self, bot, chat_id, players):
         self.bot = bot
@@ -21,7 +22,7 @@ class SecretHitlerGame(Game):
         random.shuffle(self.dec)
 
         # set players role
-        new_cards = SecretHitlerGame.cards[:len(players)]
+        new_cards = SecretHitlerGame.CARDS[:len(players)]
         random.shuffle(new_cards)
         hitler = ''
         fascists = []
@@ -31,7 +32,6 @@ class SecretHitlerGame(Game):
                 hitler = player['name']
             elif card is 2:  # fascist
                 fascists.append(player['name'])
-        print(hitler)
 
         # send players there rule
         # send fascist how others fascists
@@ -44,7 +44,7 @@ class SecretHitlerGame(Game):
                 bot.send_message(chat_id=player['id'], text="hitler is " + hitler)
             elif player['card'] is 2 and len(players) > 6:  # hitler in 5-6 players game
                 bot.send_message(chat_id=player['id'],
-                                 text="fascist is " + ", ".join(fascists) + "and Hitler is " + hitler)
+                                 text="fascists are " + ", ".join(fascists) + " and Hitler is " + hitler)
 
         # random order of players
         random.shuffle(players)
@@ -53,6 +53,6 @@ class SecretHitlerGame(Game):
             text='the order of the players is : \n' + ', \n'.join([player['name'] for player in players])
         )
 
-    def handle_btn(self, data):
+    def handle_btn(self, update):
         # todo: handle the buttons that players clicked
         pass
