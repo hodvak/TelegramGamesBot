@@ -64,8 +64,8 @@ def _get_new_buttons(chat_id):
 
     if num_of_players < unstarted_games[chat_id].game.max_players:
         buttons.append(InlineKeyboardButton(text=f'join game({num_of_players})', callback_data='join'))
-    else:
-        buttons.append(InlineKeyboardButton(text=f'start ({num_of_players})', callback_data='start'))
+    if num_of_players > unstarted_games[chat_id].game.min_players:
+        buttons.append(InlineKeyboardButton(text=f'start ({num_of_players if num_of_players == unstarted_games[chat_id].game.max_players else ""})', callback_data='start'))
 
     return buttons
 
