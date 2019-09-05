@@ -27,22 +27,22 @@ def main():
     dp.add_handler(CommandHandler("start_secret_hitler", start_secret_hitler))
     dp.add_handler(CallbackQueryHandler(join_game, pattern='join'))
     dp.add_handler(CallbackQueryHandler(start_game, pattern='start'))
+    dp.add_handler(CallbackQueryHandler(handle_game_buttons))
     updater.start_polling()
     updater.idle()
 
 
-def init_game(bot, update, game, game_name):
+def init_game(bot, update, game):
     chat_id = update.message.chat_id
     unstarted_games[chat_id] = Unstarted_game(game=game, players=[])
 
-    bot.sendMessage(chat_id=chat_id, text=game_name, reply_markup=reply_markup)
+    bot.sendMessage(chat_id=chat_id, text=game.NAME, reply_markup=reply_markup)
 
 
 def start_secret_hitler(bot, update):
     init_game(bot=bot,
               update=update,
-              game=secretHitler.SecretHitlerGame,
-              game_name="SecretHitler")
+              game=secretHitler.SecretHitlerGame)
 
 
 def join_game(bot, update):
@@ -54,29 +54,29 @@ def join_game(bot, update):
     user_name = update.callback_query.from_user.username
 
     new_player = {'name': user_name, 'id': user_id}
-
     # add player only if there no more than max players and player not in the array
     # todo: when done testing remove 'or true'
-    if len(unstarted_games[chat_id].players) < unstarted_games[chat_id].game.max_players \
-            and not any(player['id'] == user_id for player in unstarted_games[chat_id].players) \
-            or True:
+    if chat_id in unstarted_games \
+            and len(unstarted_games[chat_id].players) < unstarted_games[chat_id].game.MAX_PLAYERS \
+            and (not any(player['id'] == user_id for player in unstarted_games[chat_id].players) or True):
         unstarted_games[chat_id].players.append(new_player)
-
-    new_markup = InlineKeyboardMarkup(_get_new_buttons(chat_id))
+    new_markup = InlineKeyboardMarkup(get_new_buttons(chat_id))
     update.callback_query.edit_message_reply_markup(reply_markup=new_markup)
 
 
-def _get_new_buttons(chat_id):
+def get_new_buttons(chat_id):
+    if chat_id not in unstarted_games:
+        return [[]]
     buttons = []
     num_of_players = len(unstarted_games[chat_id].players)
 
     start_text = "start"
-    if num_of_players == unstarted_games[chat_id].game.max_players:
+    if num_of_players == unstarted_games[chat_id].game.MAX_PLAYERS:
         start_text = "start(" + str(num_of_players) + ")"
 
-    if num_of_players < unstarted_games[chat_id].game.max_players:
+    if num_of_players < unstarted_games[chat_id].game.MAX_PLAYERS:
         buttons.append([InlineKeyboardButton(text=f'join game({num_of_players})', callback_data='join')])
-    if num_of_players >= unstarted_games[chat_id].game.min_players:
+    if num_of_players >= unstarted_games[chat_id].game.MIN_PLAYERS:
         buttons.append([InlineKeyboardButton(text=start_text, callback_data='start')])
 
     return buttons
@@ -84,10 +84,20 @@ def _get_new_buttons(chat_id):
 
 def start_game(bot, update):
     chat_id = update.callback_query.message.chat.id
-    if len(unstarted_games[chat_id].players) >= unstarted_games[chat_id].game.min_players:
+    if chat_id in unstarted_games \
+            and len(unstarted_games[chat_id].players) >= unstarted_games[chat_id].game.MIN_PLAYERS:
         games[chat_id] = unstarted_games[chat_id].game(bot=bot,
                                                        chat_id=chat_id,
                                                        players=unstarted_games[chat_id].players)
+        update.callback_query.message.edit_text(text=unstarted_games[chat_id].game.NAME+" has began")
+    else:
+        update.callback_query.message.delete()
+
+
+def handle_game_buttons(bot, update):
+    chat_id = update.callback_query.message.chat.id
+    if chat_id in games:
+        games[chat_id].handle_btn(update)
 
 
 if __name__ == '__main__':
