@@ -1,9 +1,9 @@
 import random
-import game
 from SecretHitler import fascistsBoard
+from game import Game
 
 
-class SecretHitlerGame(game):
+class SecretHitlerGame(Game):
     cards_data = [{'name': 'hitler', "img": "hitler.png"},
                   {'name': 'liberal', "img": "liberal.png"},
                   {'name': 'fascist', "img": "fascist.png"}]
