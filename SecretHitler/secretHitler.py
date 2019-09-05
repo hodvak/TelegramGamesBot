@@ -4,19 +4,34 @@ from game import Game
 
 
 class SecretHitlerGame(Game):
+    LIBERAL_INDEX = 0
+    FASCIST_INDEX = 1
+    HITLER_INDEX = 2
     cards_data = [{'name': 'hitler', "img": "hitler.png"},
                   {'name': 'liberal', "img": "liberal.png"},
                   {'name': 'fascist', "img": "fascist.png"}]
-    CARDS = [1, 1, 0, 1, 2, 1, 2, 1, 2, 1]
+    CARDS = [LIBERAL_INDEX,
+             LIBERAL_INDEX,
+             HITLER_INDEX,
+             LIBERAL_INDEX,
+             FASCIST_INDEX,
+             LIBERAL_INDEX,
+             FASCIST_INDEX,
+             LIBERAL_INDEX,
+             FASCIST_INDEX,
+             LIBERAL_INDEX
+             ]
     MIN_PLAYERS = 5
     MAX_PLAYERS = 10
     NAME = "Secret Hitler"
+
 
     def __init__(self, bot, chat_id, players):
         self.bot = bot
         self.chet_id = chat_id
         self.players = players
-        self.fascist_board = fascistsBoard.select_board(len(players))
+        self.fascist_board_method, self.fascist_board_stickers = fascistsBoard.select_board(len(players))
+        self.rules = [0, 0]
 
         self.dec = [[1] * 6, [0] * 9]
         random.shuffle(self.dec)
@@ -52,6 +67,8 @@ class SecretHitlerGame(Game):
             chat_id=chat_id,
             text='the order of the players is : \n' + ', \n'.join([player['name'] for player in players])
         )
+        self.deck = [[0] * 11, [1] * 6]
+        random.shuffle(self.deck)
 
     def handle_btn(self, update):
         # todo: handle the buttons that players clicked
