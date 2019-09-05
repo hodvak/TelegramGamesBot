@@ -25,8 +25,8 @@ class SecretHitlerGame(Game):
     MAX_PLAYERS = 10
     NAME = "Secret Hitler"
 
-
     def __init__(self, bot, chat_id, players):
+        super(SecretHitlerGame, self).__init__()
         self.bot = bot
         self.chet_id = chat_id
         self.players = players
