@@ -2,12 +2,14 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 from SecretHitler import secretHitler
 from collections import namedtuple
-from .game import Game
+from typing import Dict
+from game import Game
 
-UnstartedGame = namedtuple('Unstarted Game', ['game', 'players'])
+Unstarted_game = namedtuple("unstarted_game",
+                            ['game', 'players'])
 
-games: dict[str: Game] = {}  # Games in play right now. The key is the chat ID
-unstarted_games: dict[str: UnstartedGame] = {}  # Games that haven't started yet. The key is the chat ID
+games: Dict[int, Game] = {}  # Dict[int, Game]  # Games in play right now. The key is the chat ID
+unstarted_games: Dict[int, Unstarted_game] = {}  # Games that haven't started yet. The key is the chat ID
 promo_keyboard = [InlineKeyboardButton(text="join game", callback_data="join")]
 reply_markup = InlineKeyboardMarkup([promo_keyboard])
 
@@ -31,7 +33,8 @@ def main():
 
 def init_game(bot, update, game, game_name):
     chat_id = update.message.chat_id
-    unstarted_games[chat_id] = UnstartedGame(game, [])
+    unstarted_games[chat_id] = Unstarted_game(game=game, players=[])
+
     bot.sendMessage(chat_id=chat_id, text=game_name, reply_markup=reply_markup)
 
 
@@ -50,22 +53,27 @@ def join_game(bot, update):
     user_id = update.callback_query.from_user.id
     user_name = update.callback_query.from_user.username
 
-    player = {'name': user_name, 'id': user_id}
-    unstarted_games[chat_id]['players'].append(player)
+    new_player = {'name': user_name, 'id': user_id}
+    # todo: when done testing remove 'or true'
+    if not any(player['name'] == user_name for player in unstarted_games[chat_id].players) or True:
+        unstarted_games[chat_id].players.append(new_player)
 
-    new_markup = InlineKeyboardMarkup([_get_new_buttons(chat_id)])
+    new_markup = InlineKeyboardMarkup(_get_new_buttons(chat_id))
     update.callback_query.edit_message_reply_markup(reply_markup=new_markup)
 
 
 def _get_new_buttons(chat_id):
     buttons = []
-
     num_of_players = len(unstarted_games[chat_id].players)
 
+    start_text = "start"
+    if num_of_players == unstarted_games[chat_id].game.max_players:
+        start_text = "start(" + str(num_of_players) + ")"
+
     if num_of_players < unstarted_games[chat_id].game.max_players:
-        buttons.append(InlineKeyboardButton(text=f'join game({num_of_players})', callback_data='join'))
-    if num_of_players > unstarted_games[chat_id].game.min_players:
-        buttons.append(InlineKeyboardButton(text=f'start ({num_of_players if num_of_players == unstarted_games[chat_id].game.max_players else ""})', callback_data='start'))
+        buttons.append([InlineKeyboardButton(text=f'join game({num_of_players})', callback_data='join')])
+    if num_of_players >= unstarted_games[chat_id].game.min_players:
+        buttons.append([InlineKeyboardButton(text=start_text, callback_data='start')])
 
     return buttons
 
