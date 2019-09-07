@@ -65,5 +65,5 @@ board_files_id = [
 ]
 
 
-def select_board(num_of_players):
-    return boards_method[int((num_of_players - 5) / 2)], board_files_id[int((num_of_players - 5) / 2)]
+def select_index(num_of_players):
+    return int((num_of_players - 5) / 2)
