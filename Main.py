@@ -89,13 +89,16 @@ def start_game(bot, update):
         games[chat_id] = unstarted_games[chat_id].game(bot=bot,
                                                        chat_id=chat_id,
                                                        players=unstarted_games[chat_id].players)
-        update.callback_query.message.edit_text(text=unstarted_games[chat_id].game.NAME+" has began")
+        update.callback_query.message.edit_text(text=unstarted_games[chat_id].game.NAME + " has began")
     else:
         update.callback_query.message.delete()
 
 
 def handle_game_buttons(bot, update):
-    chat_id = update.callback_query.message.chat.id
+    data = update.callback_query.data
+    chat_id = int(update.callback_query.data.split('_')[0])
+    update.callback_query.data = data[data.index('_') + 1:]
+    # chat_id = update.callback_query.message.chat.id
     if chat_id in games:
         games[chat_id].handle_btn(update)
 

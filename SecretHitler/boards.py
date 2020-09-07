@@ -27,14 +27,14 @@ def handle_btn(data, bot):
     pass
 
 
-boards_method = [
+fascist_board_methods = [
     [nothing, nothing, policy_peek, execution, execution],
     [nothing, investigate_loyalty, call_special_election, execution, execution],
     [investigate_loyalty, investigate_loyalty, call_special_election, execution, execution]
 ]
 
 # stickers file id
-board_files_id = [
+fascist_board_files_id = [
     [
         'CAADAQADJQADPUHDFCRQ9EDgHRPxFgQ',
         'CAADAQADJgADPUHDFLV8q4IVus-8FgQ',
@@ -63,7 +63,13 @@ board_files_id = [
         'CAADAQADHAADPUHDFOebUvLwygmCFgQ'
     ]
 ]
+liberal_board_files_id = ['CAADAQADHQADPUHDFGdPOhESIavXFgQ',
+                          'CAADAQADHgADPUHDFDp-GuXHRak4FgQ',
+                          'CAADAQADHwADPUHDFFc3YX2A1z8nFgQ',
+                          'CAADAQADIAADPUHDFLXq6zVC0uI6FgQ',
+                          'CAADAQADIQADPUHDFKMU6C1u1f0_FgQ',
+                          'CAADAQADIgADPUHDFKDPYU6jlO-cFgQ']
 
 
-def select_index(num_of_players):
+def fascist_select_index(num_of_players):
     return int((num_of_players - 5) / 2)
