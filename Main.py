@@ -53,7 +53,7 @@ def join_game(bot, update):
     user_id = update.callback_query.from_user.id
     user_name = update.callback_query.from_user.username
 
-    new_player = {'name': user_name + str(len(unstarted_games[chat_id].players)), 'id': user_id}
+    new_player = {'name': user_name, 'id': user_id}
     # add player only if there no more than max players and player not in the array
     # todo: when done testing remove 'or true'
     if chat_id in unstarted_games \
