@@ -1,30 +1,90 @@
-def nothing(peek, president, players, chat_id):
-    pass
+import time
 
 
-def execution(peek, president, players, chat_id):
-    # todo: do it
-    pass
+def nothing(game):
+    print("nothing function")
 
 
-def policy_peek(bot, peek, president, players, chat_id):
-    # todo: do it
-    pass
+def execution(game):
+    print("execution")
+    message = game.send_message(text="president must kill player").message_id
+    last_handle_btn = game.handle_btn
+    game.president -= 1
+    game.handle_btn = lambda update: execution_btn_handler(game, update, last_handle_btn, message)
 
 
-def call_special_election(bot, peek, president, players, chat_id):
-    # todo: do it
-    pass
+def execution_btn_handler(game, update, btn_handler, message_to_delete):
+    # todo : check if its hitler
+    if update.callback_query.from_user.id == game.players[game.president]['id']:
+        player_index = game.player_index_by_id(int(update.callback_query.data.split('_')[1]))
+        if game.players[player_index] in game.alive and player_index != game.president:
+            game.alive.remove(game.players[player_index])
+            game.president = (game.president + 1) % len(game.players)
+            while game.players[game.president] not in game.alive:
+                game.president = (game.president + 1) % len(game.players)
+            game.handle_btn = btn_handler
+            game.bot.deleteMessage(message_id=message_to_delete, chat_id=game.chat_id)
+            game.render_name_buttons(game.bot)
 
 
-def investigate_loyalty(bot, peek, president, players, chat_id):
-    # todo: do it
-    pass
+def policy_peek(game):
+    from SecretHitler.secretHitler import SecretHitlerGame
+    message_id = game.send_message(
+        int(game.players[game.president]['id']),
+        "the 3 next cards will be :\n" + ", ".join(
+            [SecretHitlerGame.cards_data[card]['name'] for card in game.deck[:3]])
+    ).message_id
+
+    time.sleep(10)
+
+    game.bot.deleteMessage(message_id=message_id, chat_id=game.chat_id)
 
 
-def handle_btn(data, bot):
-    # todo: do it
-    pass
+def call_special_election(game):
+    print("call_special_election")
+    message = game.send_message(text="president must choose the next president").message_id
+    last_handle_btn = game.handle_btn
+    game.president -= 1
+    game.handle_btn = lambda update: call_special_election_btn_handler(game, update, last_handle_btn, message)
+
+
+def call_special_election_btn_handler(game, update, btn_handler, message_to_delete):
+    if update.callback_query.from_user.id == game.players[game.president]['id']:
+        player_index = game.player_index_by_id(int(update.callback_query.data.split('_')[1]))
+        if game.players[player_index] in game.alive and player_index != game.president:
+            game.president = player_index
+            game.handle_btn = btn_handler
+            game.bot.deleteMessage(message_id=message_to_delete, chat_id=game.chat_id)
+            game.render_name_buttons(game.bot)
+
+
+def investigate_loyalty(game):
+    print("investigate_loyalty")
+    message = game.send_message(
+        text="president must choose alive player and see his party membership (hitler is a fascist)"
+    ).message_id
+    last_handle_btn = game.handle_btn
+    game.president -= 1
+    game.handle_btn = lambda update: investigate_loyalty_btn_handler(game, update, last_handle_btn, message)
+
+
+def investigate_loyalty_btn_handler(game, update, btn_handler, message_to_delete):
+    if update.callback_query.from_user.id == game.players[game.president]['id']:
+        player_index = game.player_index_by_id(int(update.callback_query.data.split('_')[1]))
+        if game.players[player_index] in game.alive and player_index != game.president:
+
+            membership = 'liberal' if game.players[player_index]['card'] == 0 else "fascist"
+            game.send_message(
+                chat_id=game.players[game.president]['id'],
+                text=f"{game.players[player_index]['name']} is a {membership}"
+            )
+
+            game.president = (game.president + 1) % len(game.players)
+            while game.players[game.president] not in game.alive:
+                game.president = (game.president + 1) % len(game.players)
+            game.handle_btn = btn_handler
+            game.bot.deleteMessage(message_id=message_to_delete, chat_id=game.chat_id)
+            game.render_name_buttons(game.bot)
 
 
 fascist_board_methods = [
