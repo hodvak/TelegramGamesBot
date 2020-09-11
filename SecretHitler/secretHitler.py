@@ -2,6 +2,7 @@ import random
 import time
 
 from SecretHitler import boards
+from SecretHitler.boards import nein_board_files_id
 from game import Game
 
 
@@ -38,7 +39,7 @@ class SecretHitlerGame(Game):
         # the players
         self.players = players
         self.alive = players.copy()
-        self.alive.pop(2)
+        self.nein_in_a_row = 0
         self.state = 'pick canceler'  # /'vote'/'kill'/''
         self.president = 0
         self.chancellor = -1
@@ -97,42 +98,59 @@ class SecretHitlerGame(Game):
         # The boards message id
         self.boards_message_id = [
             bot.sendSticker(chat_id=chat_id, sticker=self.fascist_board_stickers[0]).message_id,
-            bot.sendSticker(chat_id=chat_id, sticker=self.liberals_board_stickers[0]).message_id
+            bot.sendSticker(chat_id=chat_id, sticker=self.liberals_board_stickers[0]).message_id,
+            bot.sendSticker(chat_id=chat_id, sticker=boards.nein_board_files_id[0]).message_id
         ]
 
     def ja_nein_handler(self, update):
         try:
-            self.votes.append(
-                {"id": update.callback_query.from_user.id, "data": update.callback_query.data.split('_')[1]})
-            if len(self.votes) < len(self.alive):
-                self.edit_message_text(message_id=update.callback_query.message.message_id,
-                                       text="agree?(" + str(len(self.votes)) + "/" + str(len(self.alive)) + ")",
-                                       buttons=[[{'text': 'JA (YES)', 'data': 'jn_ja'}],
-                                                [{'text': 'NEIN (NO)', 'data': 'jn_nein'}]])
-            else:
-                self.edit_message_text(message_id=update.callback_query.message.message_id,
-                                       text=",\n".join(
-                                           [self.player_name_by_id(v['id']) + " : " + v['data'] for v in self.votes]),
-                                       buttons=[])
-                time.sleep(2.4)
-                self.bot.deleteMessage(message_id=update.callback_query.message.message_id, chat_id=self.chat_id)
-
-                if sorted(self.votes, key=lambda student: student['data'])[int(len(self.alive) / 2)]['data'] == 'nein':
-                    self.president = (self.president + 1) % len(self.players)
-                    while self.players[self.president] not in self.alive:
-                        self.president = (self.president + 1) % len(self.players)
-                    self.chancellor = -1
-                    self.render_name_buttons(self.bot)
-                    self.state = 'pick canceler'
+            user_id = update.callback_query.from_user.id
+            if (not any(vote['id'] == user_id for vote in self.votes) and self.player_index_by_id(user_id) != -1)\
+                    or True:
+                # TODO: delete "or True" in production
+                self.votes.append(
+                    {"id": update.callback_query.from_user.id, "data": update.callback_query.data.split('_')[1]})
+                if len(self.votes) < len(self.alive):
+                    self.edit_message_text(message_id=update.callback_query.message.message_id,
+                                           text="agree?(" + str(len(self.votes)) + "/" + str(len(self.alive)) + ")",
+                                           buttons=[[{'text': 'JA (YES)', 'data': 'jn_ja'}],
+                                                    [{'text': 'NEIN (NO)', 'data': 'jn_nein'}]])
                 else:
-                    self.cards_to_pick = self.deck[:3]
-                    self.deck = self.deck[3:]
-                    self.state = 'president cards'
-                    self.send_message(chat_id=int(self.players[self.president]['id']), text="pick one to remove",
-                                      buttons=[
-                                          [{"text": self.cards_data[card]['name'], "data": "president_" + str(card)}]
-                                          for card in self.cards_to_pick])
-                self.votes = []
+                    self.edit_message_text(message_id=update.callback_query.message.message_id,
+                                           text=",\n".join(
+                                               [self.player_name_by_id(v['id']) + " : " + v['data'] for v in self.votes]),
+                                           buttons=[])
+                    time.sleep(2.4)
+                    self.bot.deleteMessage(message_id=update.callback_query.message.message_id, chat_id=self.chat_id)
+
+                    if sorted(self.votes, key=lambda student: student['data'])[int(len(self.alive) / 2)]['data'] == 'nein':
+                        self.nein_in_a_row += 1
+                        if self.nein_in_a_row == 3:
+                            self.nein_in_a_row = 0
+                            self.rules[self.deck.pop(0)] += 1
+                            if len(self.deck) < 3:
+                                self.deck += self.burn_deck
+                                self.burn_deck = []
+                            self.render_cards_status()
+
+                        self.president = (self.president + 1) % len(self.players)
+                        while self.players[self.president] not in self.alive:
+                            self.president = (self.president + 1) % len(self.players)
+                        self.chancellor = -1
+
+                        self.render_name_buttons(self.bot)
+                        self.render_new_boards()
+                        self.state = 'pick canceler'
+                    else:
+                        self.cards_to_pick = self.deck[:3]
+                        self.deck = self.deck[3:]
+                        self.nein_in_a_row = 0
+                        self.state = 'president cards'
+                        self.send_message(chat_id=int(self.players[self.president]['id']), text="pick one to remove",
+                                          buttons=[
+                                              [{"text": self.cards_data[card]['name'], "data": "president_" + str(card)}]
+                                              for card in self.cards_to_pick])
+                    self.votes = []
 
         except Exception as e:
             print(e)
@@ -246,5 +264,8 @@ class SecretHitlerGame(Game):
             ).message_id,
             self.bot.sendSticker(
                 chat_id=self.chat_id, sticker=self.liberals_board_stickers[self.rules[SecretHitlerGame.LIBERAL_INDEX]]
+            ).message_id,
+            self.bot.sendSticker(
+                chat_id=self.chat_id, sticker=boards.nein_board_files_id[self.nein_in_a_row]
             ).message_id
         ]
