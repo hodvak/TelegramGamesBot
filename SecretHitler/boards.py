@@ -129,6 +129,12 @@ liberal_board_files_id = ['CAADAQADHQADPUHDFGdPOhESIavXFgQ',
                           'CAADAQADIAADPUHDFLXq6zVC0uI6FgQ',
                           'CAADAQADIQADPUHDFKMU6C1u1f0_FgQ',
                           'CAADAQADIgADPUHDFKDPYU6jlO-cFgQ']
+nein_board_files_id = [
+    "CAACAgEAAxkBAAIW019ahQoaeBVFqsUhoLAr7IhsSG6kAAINAAM9QcMUMckZigXYTswbBA",
+    "CAACAgEAAxkBAAIW1F9ahRC8vYP3davE-94PWmhihWWLAAIOAAM9QcMUb_Hvk71c974bBA",
+    "CAACAgEAAxkBAAIW1V9ahRYJBThP1zweTBzM6zhO1aBbAAIPAAM9QcMUwoncgcZQf9MbBA",
+    "CAACAgEAAxkBAAIW1l9ahRnpqypyw_zp44a8ao-BfhezAAIQAAM9QcMUflRR3ijB6H4bBA"
+]
 
 
 def fascist_select_index(num_of_players):
