@@ -2,7 +2,7 @@ import random
 import time
 
 from . import boards
-from TelegramGamesBot.game import Game
+from game import Game
 
 
 class SecretHitlerGame(Game):
