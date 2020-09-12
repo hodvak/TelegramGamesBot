@@ -1,9 +1,9 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
-from SecretHitler import secretHitler
+from TelegramGamesBot.SecretHitler import secretHitler
 from collections import namedtuple
 from typing import Dict
-from game import Game
+from TelegramGamesBot.game import Game
 
 Unstarted_game = namedtuple("unstarted_game",
                             ['game', 'players'])
@@ -58,7 +58,7 @@ def join_game(bot, update):
     # todo: when done testing remove 'or true'
     if chat_id in unstarted_games \
             and len(unstarted_games[chat_id].players) < unstarted_games[chat_id].game.MAX_PLAYERS \
-            and (not any(player['id'] == user_id for player in unstarted_games[chat_id].players) or True):
+            and (not any(player['id'] == user_id for player in unstarted_games[chat_id].players)):
         unstarted_games[chat_id].players.append(new_player)
     new_markup = InlineKeyboardMarkup(get_new_buttons(chat_id))
     update.callback_query.edit_message_reply_markup(reply_markup=new_markup)

@@ -22,9 +22,16 @@ def execution_btn_handler(game, update, btn_handler, message_to_delete):
             game.president = (game.president + 1) % len(game.players)
             while game.players[game.president] not in game.alive:
                 game.president = (game.president + 1) % len(game.players)
+            game.render_name_buttons(game.bot)
+            if game.players[player_index]['card'] == 2:
+                game.state = "gameOver"
+                game.send_message("Liberals won after killing hitler")
+                game.render_new_boards()
+                return
+
             game.handle_btn = btn_handler
             game.bot.deleteMessage(message_id=message_to_delete, chat_id=game.chat_id)
-            game.render_name_buttons(game.bot)
+
 
 
 def policy_peek(game):

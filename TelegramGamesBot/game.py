@@ -14,12 +14,12 @@ class Game:
         print(data)
 
     def send_message(self, chat_id=None, text=None, buttons=None):
-        '''
+        """
         :param chat_id: chat to write in
         :param text: the text to write
         :param buttons: list(rows) of list(cols) of dict with 'text' and 'data'
         :return: nothing
-        '''
+        """
         if chat_id is None:
             chat_id = self.chat_id
         reply_markup = []
@@ -53,4 +53,5 @@ class Game:
                 reply_markup.append(linebuttons)
 
         self.bot.edit_message_text(message_id=message_id, chat_id=chat_id, text=text,
-                                   reply_markup=InlineKeyboardMarkup(reply_markup) if reply_markup is not None else None)
+                                   reply_markup=InlineKeyboardMarkup(
+                                       reply_markup) if reply_markup is not None else None)
